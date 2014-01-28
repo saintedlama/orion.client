@@ -221,11 +221,6 @@ define(['i18n!orion/navigate/nls/messages', 'require', 'orion/webui/littlelib', 
 		}
 		return item;
 	}
-		
-	function canCreateProject(item) {
-		item = forceSingleItem(item);
-		return item.Location && mFileUtils.isAtRoot(item.Location);
-	}
 
 	function createProject(explorer, fileClient, progress, name, populateFunction, progressMessage) {
 		// set progress variable so error handler can use
@@ -326,6 +321,14 @@ define(['i18n!orion/navigate/nls/messages', 'require', 'orion/webui/littlelib', 
 				path = path.substring(0, qIndex+1);
 			}
 			return path;
+		}
+		
+		function canCreateProject(item) {
+			if (!explorer.isCommandsVisible()) {
+				return false;
+			}
+			item = forceSingleItem(item);
+			return item.Location && mFileUtils.isAtRoot(item.Location);
 		}
 		
 		function makeMoveCopyTargetChoices(items, userData, isCopy) {
@@ -469,6 +472,9 @@ define(['i18n!orion/navigate/nls/messages', 'require', 'orion/webui/littlelib', 
 		}
 
 		var oneOrMoreFilesOrFolders = function(item) {
+			if (!explorer.isCommandsVisible()) {
+				return false;
+			}
 			var items = Array.isArray(item) ? item : [item];
 			if (items.length === 0) {
 				return false;
@@ -545,6 +551,9 @@ define(['i18n!orion/navigate/nls/messages', 'require', 'orion/webui/littlelib', 
 		}
 		
 		function checkFolderSelection(item) {
+			if (!explorer.isCommandsVisible()) {
+				return false;
+			}
 			return getTargetFolder(explorer.selection.getSelections()) || getTargetFolder(item);
 		}
 
@@ -554,6 +563,9 @@ define(['i18n!orion/navigate/nls/messages', 'require', 'orion/webui/littlelib', 
 				imageClass: "core-sprite-rename", //$NON-NLS-0$
 				id: "eclipse.renameResource" + idSuffix, //$NON-NLS-0$
 				visibleWhen: function(item) {
+					if (!explorer.isCommandsVisible()) {
+						return false;
+					}
 					if (Array.isArray(item)) {
 						return item.length === 1 && item[0].Name;
 					}
@@ -623,6 +635,9 @@ define(['i18n!orion/navigate/nls/messages', 'require', 'orion/webui/littlelib', 
 				tooltip: messages["Compare the selected 2 files with each other"],
 				id: "eclipse.compareWithEachOther" + idSuffix, //$NON-NLS-0$
 				visibleWhen: function(item) {
+					if (!explorer.isCommandsVisible()) {
+						return false;
+					}
 					if (Array.isArray(item)) {
 						if(item.length === 2 && !item[0].Directory && !item[1].Directory){
 							var contentType1 = contentTypeService.getFilenameContentType(item[0].Name);
@@ -651,6 +666,9 @@ define(['i18n!orion/navigate/nls/messages', 'require', 'orion/webui/littlelib', 
 			tooltip: messages["Compare the selected folder with a specified folder"], 
 			id: "eclipse.compareWith" + idSuffix, //$NON-NLS-0$
 			visibleWhen: function(item) {
+				if (!explorer.isCommandsVisible()) {
+					return false;
+				}
 				if (Array.isArray(item)) {
 					if(item.length === 1 && item[0].Directory){
 						return true;
@@ -739,6 +757,9 @@ define(['i18n!orion/navigate/nls/messages', 'require', 'orion/webui/littlelib', 
 			imageClass: "core-sprite-exportzip", //$NON-NLS-0$
 			id: "eclipse.downloadFile" + idSuffix, //$NON-NLS-0$
 			visibleWhen: function(item) {
+				if (!explorer.isCommandsVisible()) {
+					return false;
+				}
 				item = forceSingleItem(item);
 				return item.ExportLocation && item.Directory;
 			},
@@ -909,6 +930,9 @@ define(['i18n!orion/navigate/nls/messages', 'require', 'orion/webui/littlelib', 
 				}
 			},
 			visibleWhen: function(item) {
+				if (!explorer.isCommandsVisible()) {
+					return false;
+				}
 				item = explorer.treeRoot;
 				return item.Parents || item.type === "Project"; //$NON-NLS-0$
 			}
@@ -928,6 +952,9 @@ define(['i18n!orion/navigate/nls/messages', 'require', 'orion/webui/littlelib', 
 				}
 			},
 			visibleWhen: function(item) {
+				if (!explorer.isCommandsVisible()) {
+					return false;
+				}
 				var selections = explorer.selection.getSelections();
 				return selections.length === 1 && selections[0].Directory;
 			}
@@ -1006,6 +1033,9 @@ define(['i18n!orion/navigate/nls/messages', 'require', 'orion/webui/littlelib', 
 				dialog.show();
 			},
 			visibleWhen: function(item) {
+				if (!explorer.isCommandsVisible()) {
+					return false;
+				}
 				item = forceSingleItem(item);
 				return item.ExportLocation && item.Directory;
 			}
@@ -1075,6 +1105,9 @@ define(['i18n!orion/navigate/nls/messages', 'require', 'orion/webui/littlelib', 
 		commandService.addCommand(copyToBufferCommand);
 		
 		var canPaste = function(items){
+			if (!explorer.isCommandsVisible()) {
+				return false;
+			}
 			return (bufferedSelection.length > 0) && checkFolderSelection(items);
 		};
 		
@@ -1194,7 +1227,13 @@ define(['i18n!orion/navigate/nls/messages', 'require', 'orion/webui/littlelib', 
 					}
 				}
 			},
-			visibleWhen: canCreateProject
+			visibleWhen: function(item) {
+				if (!explorer.isCommandsVisible()) {
+					return false;
+				}
+				item = forceSingleItem(item);
+				return item.Location && mFileUtils.isAtRoot(item.Location);
+			}
 		});
 		return newContentCommand;
 	};
